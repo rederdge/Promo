@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromoCheck Pro - Global Validator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-valid {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+        }
+
+        .status-invalid {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+        }
+
+        .lang-btn {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .lang-btn.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .lang-btn:not(.active) {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .lang-btn:not(.active):hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <nav class="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <h1 class="text-xl font-bold text-blue-600 flex items-center">
+                <i class="fas fa-globe mr-2"></i> PromoCheck Pro
+            </h1>
+
+            <div class="flex items-center space-x-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                <button onclick="setLanguage('en')" id="btn-en" class="lang-btn active">EN</button>
+                <button onclick="setLanguage('uk')" id="btn-uk" class="lang-btn">UA</button>
+                <button onclick="setLanguage('fr')" id="btn-fr" class="lang-btn">FR</button>
+                <button onclick="setLanguage('es')" id="btn-es" class="lang-btn">ES</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl w-full mx-auto p-6 space-y-8 flex-grow">
+
+        <div class="card p-8 text-center space-y-6">
+            <div>
+                <h2 id="txt-main-title" class="text-2xl font-bold text-slate-800 italic">Promo Code Check</h2>
+                <p id="txt-main-sub" class="text-slate-500 mt-1">Status and individual expiration date verification</p>
+            </div>
+
+            <div class="max-w-md mx-auto space-y-4">
+                <input type="text" id="promoInput"
+                    class="w-full px-6 py-4 text-2xl text-center font-mono font-bold tracking-widest border-2 border-slate-200 rounded-2xl focus:border-blue-500 focus:ring-0 outline-none transition"
+                    placeholder="ENTER CODE" autocomplete="off">
+
+                <button onclick="checkCode()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition shadow-lg flex items-center justify-center space-x-2">
+                    <i class="fas fa-search"></i>
+                    <span id="txt-btn-check">CHECK STATUS</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="resultBox" class="hidden">
+            <div id="statusCard" class="card p-8 flex flex-col items-center text-center space-y-4">
+                <div id="statusIcon" class="w-20 h-20 rounded-full flex items-center justify-center text-3xl"></div>
+                <div>
+                    <h3 id="statusTitle" class="text-2xl font-black uppercase italic"></h3>
+                    <p id="statusDesc" class="text-slate-600 mt-2 font-medium"></p>
+                    <div class="mt-3 p-2 bg-white/50 rounded-lg inline-block border border-slate-100">
+                        <p id="expiryInfo" class="text-sm font-bold text-slate-500"></p>
+                    </div>
+                </div>
+                <div id="actionBtnContainer" class="pt-4 w-full max-w-xs"></div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <h3 class="font-bold text-slate-700 flex items-center">
+                <i class="fas fa-history mr-2"></i> <span id="txt-history">Action Log</span>
+            </h3>
+            <div id="historyList" class="space-y-2">
+                <!-- Log entries -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-6 text-center text-slate-400 text-sm border-t border-slate-100">
+        <span id="txt-footer">PromoCheck Pro — Multi-language Support System</span>
+    </footer>
+
+    <script>
+        const translations = {
+            en: {
+                mainTitle: "Promo Code Check",
+                mainSub: "Status and individual expiration date verification",
+                btnCheck: "CHECK STATUS",
+                history: "Action Log",
+                footer: "PromoCheck Pro — Multi-language Support System",
+                placeholder: "ENTER CODE",
+                statusValid: "VALID",
+                statusValidDesc: "Code is active and ready to use!",
+                statusUsed: "ALREADY USED",
+                statusUsedDesc: "This client has already used this discount.",
+                statusExpired: "EXPIRED",
+                statusExpiredDesc: "The validity period ended on ",
+                btnUse: "REDEEM NOW",
+                expiryLabel: "Valid until: ",
+                usedLabel: "Used at: ",
+                toastSuccess: "Code marked as used!",
+                justNow: "Just now"
+            },
+            uk: {
+                mainTitle: "Перевірка промокоду",
+                mainSub: "Перевірка статусу та індивідуальної дати завершення",
+                btnCheck: "ПЕРЕВІРИТИ",
+                history: "Журнал дій",
+                footer: "PromoCheck Pro — Мультимовна система підтримки",
+                placeholder: "ВВЕДІТЬ КОД",
+                statusValid: "ДІЙСНИЙ",
+                statusValidDesc: "Код активний та готовий до використання!",
+                statusUsed: "ВЖЕ ВИКОРИСТАНО",
+                statusUsedDesc: "Цей клієнт вже скористався знижкою.",
+                statusExpired: "ПРОСТРОЧЕНО",
+                statusExpiredDesc: "Термін дії закінчився ",
+                btnUse: "ВИКОРИСТАТИ ЗАРАЗ",
+                expiryLabel: "Діє до: ",
+                usedLabel: "Використано о: ",
+                toastSuccess: "Код позначено як використаний!",
+                justNow: "Щойно"
+            },
+            fr: {
+                mainTitle: "Vérification du code",
+                mainSub: "Vérification du statut et de la date d'expiration",
+                btnCheck: "VÉRIFIER",
+                history: "Journal d'actions",
+                footer: "PromoCheck Pro — Système multilingue",
+                placeholder: "ENTRER LE CODE",
+                statusValid: "VALIDE",
+                statusValidDesc: "Le code est actif et prêt à être utilisé !",
+                statusUsed: "DÉJÀ UTILISÉ",
+                statusUsedDesc: "Ce client a déjà utilisé cette réduction.",
+                statusExpired: "EXPIRÉ",
+                statusExpiredDesc: "La période de validité a pris fin le ",
+                btnUse: "UTILISER MAINTENANT",
+                expiryLabel: "Valable jusqu'au : ",
+                usedLabel: "Utilisé à : ",
+                toastSuccess: "Code marqué comme utilisé !",
+                justNow: "À l'instant"
+            },
+            es: {
+                mainTitle: "Verificación de Código",
+                mainSub: "Verificación de estado y fecha de vencimiento",
+                btnCheck: "VERIFICAR",
+                history: "Registro de acciones",
+                footer: "PromoCheck Pro — Sistema multilingüe",
+                placeholder: "INGRESAR CÓDIGO",
+                statusValid: "VÁLIDO",
+                statusValidDesc: "¡El código está activo y listo para usar!",
+                statusUsed: "YA UTILIZADO",
+                statusUsedDesc: "Este cliente ya ha utilizado este descuento.",
+                statusExpired: "EXPIRADO",
+                statusExpiredDesc: "El período de validez terminó el ",
+                btnUse: "CANJEAR AHORA",
+                expiryLabel: "Válido hasta: ",
+                usedLabel: "Usado a las: ",
+                toastSuccess: "¡Código marcado como usado!",
+                justNow: "Recién"
+            }
+        };
+
+        let currentLang = 'en';
+        let mockDB = {
+            'SALE10': { status: 'valid', expireAt: '2026-12-31' },
+            'WEEKEND': { status: 'valid', expireAt: '2024-05-20' },
+            'USED-50': { status: 'used', expireAt: '2026-01-01', usedAt: '12:45' }
+        };
+
+        let actionsHistory = [];
+
+        function setLanguage(lang) {
+            currentLang = lang;
+
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${lang}`).classList.add('active');
+
+            const t = translations[lang];
+            document.getElementById('txt-main-title').innerText = t.mainTitle;
+            document.getElementById('txt-main-sub').innerText = t.mainSub;
+            document.getElementById('txt-btn-check').innerText = t.btnCheck;
+            document.getElementById('txt-history').innerText = t.history;
+            document.getElementById('txt-footer').innerText = t.footer;
+            document.getElementById('promoInput').placeholder = t.placeholder;
+
+            if (!document.getElementById('resultBox').classList.contains('hidden')) {
+                checkCode();
+            }
+
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            const t = translations[currentLang];
+
+            historyList.innerHTML = actionsHistory.map(entry => `
+                <div class="card p-4 flex justify-between items-center text-sm border-l-4 border-emerald-500 animate-in slide-in-from-left-2">
+                    <div class="flex flex-col">
+                        <span class="font-bold text-slate-800 text-base">${entry.code}</span> 
+                        <span class="text-slate-500 text-xs">${t.toastSuccess}</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-blue-600 font-bold">${entry.timeString}</div>
+                        <div class="text-[10px] text-slate-400 uppercase">${t.justNow}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkCode() {
+            const input = document.getElementById('promoInput').value.trim().toUpperCase();
+            if (!input) return;
+
+            const t = translations[currentLang];
+            const resultBox = document.getElementById('resultBox');
+            const statusCard = document.getElementById('statusCard');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusDesc = document.getElementById('statusDesc');
+            const expiryInfo = document.getElementById('expiryInfo');
+            const actionBtnContainer = document.getElementById('actionBtnContainer');
+
+            resultBox.classList.remove('hidden');
+            actionBtnContainer.innerHTML = '';
+            expiryInfo.innerText = '';
+
+            let data = mockDB[input];
+
+            if (!data) {
+                const defaultExpiry = new Date();
+                defaultExpiry.setDate(defaultExpiry.getDate() + 7);
+                data = { status: 'valid', expireAt: defaultExpiry.toISOString().split('T')[0] };
+            }
+
+            const today = new Date();
+            const expireDate = new Date(data.expireAt);
+            const isExpired = today > expireDate;
+
+            if (data.status === 'used') {
+                showStatus('invalid', t.statusUsed, t.statusUsedDesc, 'fa-times-circle');
+                expiryInfo.innerText = `${t.usedLabel} ${data.usedAt || '--:--'}`;
+            } else if (isExpired) {
+                showStatus('invalid', t.statusExpired, t.statusExpiredDesc + data.expireAt, 'fa-clock');
+                expiryInfo.innerText = `${t.expiryLabel} ${data.expireAt}`;
+            } else {
+                showStatus('valid', t.statusValid, t.statusValidDesc, 'fa-check-circle');
+                expiryInfo.innerText = `${t.expiryLabel} ${data.expireAt}`;
+                actionBtnContainer.innerHTML = `
+                    <button onclick="markAsUsed('${input}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition shadow-md">
+                        ${t.btnUse}
+                    </button>
+                `;
+            }
+
+            function showStatus(type, title, desc, icon) {
+                statusCard.className = `card p-8 flex flex-col items-center text-center space-y-4 status-${type} animate-in fade-in zoom-in duration-200`;
+                statusTitle.innerText = title;
+                statusDesc.innerText = desc;
+                statusIcon.innerHTML = `<i class="fas ${icon}"></i>`;
+            }
+        }
+
+        function markAsUsed(code) {
+            const now = new Date();
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            if (!mockDB[code]) mockDB[code] = { expireAt: '2026-12-31' };
+
+            mockDB[code].status = 'used';
+            mockDB[code].usedAt = timeString; // Зберігаємо час використання
+
+            actionsHistory.unshift({
+                code: code,
+                timestamp: now,
+                timeString: timeString
+            });
+
+            renderHistory();
+
+            document.getElementById('promoInput').value = '';
+            document.getElementById('resultBox').classList.add('hidden');
+        }
+
+        setLanguage('en');
+    </script>
+</body>
+
+</html>
