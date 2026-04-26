@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PromoCheck Pro - Global Validator</title>
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
@@ -116,8 +117,11 @@
             cursor: pointer;
         }
 
-        .nav-logo i {
-            font-size: 1.3rem;
+        .nav-logo img {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            object-fit: cover;
         }
 
         .nav-right {
@@ -507,14 +511,11 @@
             margin-bottom: 40px;
         }
 
-        .footer-logo-wrap {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--accent);
-            margin-bottom: 16px;
+        .footer-logo-wrap img {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            object-fit: cover;
         }
 
         .footer-desc {
@@ -849,7 +850,7 @@
             height: 80px;
             border-radius: 50%;
             border: 3px solid rgba(255, 255, 255, 0.6);
-            background: rgba(255, 255, 255, 0.2);
+            background: url('logo.jpg') center/cover no-repeat;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -857,6 +858,16 @@
             font-weight: 900;
             color: #fff;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .profile-avatar-big span {
+            background: rgba(0,0,0,0.3);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .profile-name-display {
@@ -1141,7 +1152,7 @@
     <nav>
         <div class="nav-inner">
             <div class="nav-logo" onclick="showPage('main')">
-                <i class="fas fa-globe"></i>
+                <img src="logo.jpg" alt="Logo">
                 <span>PromoCheck Pro</span>
             </div>
             <div class="nav-right">
@@ -1218,7 +1229,7 @@
 
             <!-- Profile header -->
             <div class="profile-header-card">
-                <div class="profile-avatar-big" id="profileAvatarBig">U</div>
+                <div class="profile-avatar-big" id="profileAvatarBig"><span>U</span></div>
                 <div>
                     <div class="profile-name-display" id="profileNameDisplay">–</div>
                     <div class="profile-email-display" id="profileEmailDisplay">–</div>
@@ -1430,7 +1441,7 @@
             <div class="footer-grid">
                 <div class="footer-col about">
                     <div class="footer-logo-wrap">
-                        <i class="fas fa-globe"></i>
+                        <img src="logo.jpg" alt="Logo">
                         <span>PromoCheck Pro</span>
                     </div>
                     <p id="txt-footer-desc" class="footer-desc">The world's leading promo code validation platform.</p>
@@ -1919,7 +1930,7 @@
             if (!currentUser) { showPage('main'); return; }
             const t = translations[currentLang];
             const initials = ((currentUser.firstName || 'U')[0] + (currentUser.lastName || '')[0]).toUpperCase();
-            document.getElementById('profileAvatarBig').innerText = initials || 'U';
+            document.getElementById('profileAvatarBig').innerHTML = `<span>${initials || 'U'}</span>`;
             document.getElementById('profileNameDisplay').innerText = `${currentUser.firstName} ${currentUser.lastName}`.trim() || '–';
             document.getElementById('profileEmailDisplay').innerText = currentUser.email || '–';
             document.getElementById('profileJoinDisplay').innerText = currentUser.joined ? t.profileJoined + ' ' + currentUser.joined : '';
