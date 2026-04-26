@@ -74,12 +74,28 @@
 
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
+            background: url('bg.png') center/cover no-repeat fixed var(--bg);
             color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             transition: background 0.3s, color 0.3s;
+            position: relative;
+            z-index: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            opacity: 0.85;
+            z-index: -1;
+            transition: background 0.3s, opacity 0.3s;
+        }
+
+        [data-theme="dark"] body::before {
+            opacity: 0.8;
         }
 
         /* ===== NAVIGATION ===== */
