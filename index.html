@@ -9,6 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* ===== CSS VARIABLES / THEME ===== */
         :root {
@@ -89,7 +90,7 @@
             position: fixed;
             inset: 0;
             background: var(--bg);
-            opacity: 0.85;
+            opacity: 0.2;
             z-index: -1;
             transition: background 0.3s, opacity 0.3s;
         }
@@ -134,10 +135,9 @@
         }
 
         .nav-logo img {
-            width: 34px;
-            height: 34px;
-            border-radius: 9px;
-            object-fit: cover;
+            height: 90px;
+            width: auto;
+            object-fit: contain;
         }
 
         .nav-right {
@@ -507,6 +507,23 @@
             letter-spacing: 1px;
         }
 
+        .history-delete {
+            margin-left: 12px;
+            padding: 8px;
+            color: var(--text3);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .history-delete:hover {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
         /* Improved Footer */
         footer {
             background: var(--surface);
@@ -528,10 +545,9 @@
         }
 
         .footer-logo-wrap img {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            object-fit: cover;
+            height: 48px;
+            width: auto;
+            object-fit: contain;
         }
 
         .footer-desc {
@@ -608,7 +624,9 @@
                 gap: 30px;
                 text-align: center;
             }
-            .footer-logo-wrap, .social-icons {
+
+            .footer-logo-wrap,
+            .social-icons {
                 justify-content: center;
             }
         }
@@ -623,7 +641,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            backdrop-filter: blur(6px);
+            backdrop-filter: none;
             animation: fadeIn 0.22s ease;
         }
 
@@ -866,7 +884,7 @@
             height: 80px;
             border-radius: 50%;
             border: 3px solid rgba(255, 255, 255, 0.6);
-            background: url('logo.png') center/cover no-repeat;
+            background: var(--surface2);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -876,9 +894,9 @@
             flex-shrink: 0;
             overflow: hidden;
         }
-        
+
         .profile-avatar-big span {
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             width: 100%;
             height: 100%;
             display: flex;
@@ -1168,8 +1186,7 @@
     <nav>
         <div class="nav-inner">
             <div class="nav-logo" onclick="showPage('main')">
-                <img src="logo.png" alt="Logo">
-                <span>PromoCheck Pro</span>
+                <img src="logo.png" alt="PromoCheck Pro">
             </div>
             <div class="nav-right">
                 <!-- Language buttons -->
@@ -1457,8 +1474,7 @@
             <div class="footer-grid">
                 <div class="footer-col about">
                     <div class="footer-logo-wrap">
-                        <img src="logo.png" alt="Logo">
-                        <span>PromoCheck Pro</span>
+                        <img src="logo.png" alt="PromoCheck Pro">
                     </div>
                     <p id="txt-footer-desc" class="footer-desc">The world's leading promo code validation platform.</p>
                 </div>
@@ -1506,11 +1522,55 @@
             applyLoggedInState();
         }
 
-        let mockDB = {
-            'SALE10': { status: 'valid', expireAt: '2026-12-31' },
-            'WEEKEND': { status: 'valid', expireAt: '2024-05-20' },
-            'USED-50': { status: 'used', expireAt: '2026-01-01', usedAt: '12:45' }
-        };
+        /* ===================================================
+           SUPABASE CONFIGURATION
+        =================================================== */
+        const SUPABASE_URL = 'https://zxslgkhklrpompsbzzqx.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_-99DA_jD5s5XZkbcqZpHfA_2IDal0VJ';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function syncSupabaseUser(user) {
+            if (!supabaseClient) return;
+            const { data, error } = await supabaseClient
+                .from('users')
+                .upsert({
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    phone: user.phone,
+                    password: user.password,
+                    joined: user.joined
+                });
+            if (error) console.error('Supabase Sync Error:', error);
+        }
+
+        async function savePromoHistoryToSupabase(historyEntry) {
+            if (!supabaseClient || !currentUser) return;
+            const { error } = await supabaseClient
+                .from('promo_history')
+                .insert({
+                    email: currentUser.email,
+                    code: historyEntry.code,
+                    timestamp: historyEntry.timestamp,
+                    timeString: historyEntry.timeString
+                });
+            if (error) console.error('Supabase History Error:', error);
+        }
+
+        async function fetchHistoryFromSupabase() {
+            if (!supabaseClient || !currentUser) return;
+            const { data, error } = await supabaseClient
+                .from('promo_history')
+                .select('*')
+                .eq('email', currentUser.email)
+                .order('timestamp', { ascending: false });
+
+            if (data) {
+                actionsHistory = data;
+                renderHistory();
+            }
+        }
+
         let actionsHistory = JSON.parse(localStorage.getItem('actionsHistory') || '[]');
 
         /* ===================================================
@@ -1868,6 +1928,7 @@
                 errEl.innerText = 'Invalid email or password'; errEl.classList.add('show'); return;
             }
             loginSuccess(user);
+            syncSupabaseUser(user);
         }
 
         function doRegister() {
@@ -1891,6 +1952,7 @@
             usersDB[email] = newUser;
             localStorage.setItem('usersDB', JSON.stringify(usersDB));
             loginSuccess(newUser);
+            syncSupabaseUser(newUser);
         }
 
         function doGoogleLogin() {
@@ -1909,17 +1971,18 @@
             loginSuccess(usersDB[googleUser.email]);
         }
 
-        function loginSuccess(user) {
+        async function loginSuccess(user) {
             currentUser = user;
             localStorage.setItem('currentUser', JSON.stringify(user));
             closeAuthModal();
             applyLoggedInState();
             showToast('✅ ' + translations[currentLang].toastSuccess.replace('Code', 'Signed in'));
+            fetchHistoryFromSupabase();
 
             if (pendingCode) {
                 const code = pendingCode;
                 pendingCode = null;
-                markAsUsed(code);
+                await markAsUsed(code);
             }
         }
 
@@ -1970,6 +2033,7 @@
             applyLoggedInState();
             fillProfilePage();
             showToast('✅ ' + translations[currentLang].savedSuccess);
+            syncSupabaseUser(currentUser);
         }
 
         function openChangePass() {
@@ -2001,6 +2065,7 @@
 
             closePassModal();
             showToast('🔐 ' + translations[currentLang].savedSuccess);
+            syncSupabaseUser(currentUser);
         }
 
         /* ===================================================
@@ -2025,7 +2090,7 @@
         /* ===================================================
            PROMO CHECK
         =================================================== */
-        function checkCode(silent) {
+        async function checkCode(silent) {
             const input = document.getElementById('promoInput').value.trim().toUpperCase();
             const t = translations[currentLang];
 
@@ -2048,11 +2113,27 @@
             actionBtnContainer.innerHTML = '';
             expiryInfo.style.display = 'none';
 
-            let data = mockDB[input];
+            // Try to fetch from Supabase
+            let data = null;
+            if (supabaseClient) {
+                const { data: dbData, error } = await supabaseClient
+                    .from('promo_codes')
+                    .select('*')
+                    .ilike('code', input)
+                    .maybeSingle();
+
+                if (error) {
+                    console.error('Supabase Query Error:', error);
+                    showToast('❌ Database Error: ' + error.message);
+                }
+                if (dbData) data = dbData;
+            }
+
             if (!data) {
-                const defaultExpiry = new Date();
-                defaultExpiry.setDate(defaultExpiry.getDate() + 7);
-                data = { status: 'valid', expireAt: defaultExpiry.toISOString().split('T')[0] };
+                // If not in DB, it's either used or invalid
+                setStatus(statusIcon, statusTitle, 'invalid', 'fa-times-circle', t.statusExpired);
+                statusDesc.innerText = "Code not found or already used.";
+                return;
             }
 
             const today = new Date();
@@ -2092,26 +2173,32 @@
         /* ===================================================
            ACTIVATE (requires auth)
         =================================================== */
-        function handleActivate(code) {
+        async function handleActivate(code) {
             if (!currentUser) {
                 openAuthModal(code);
             } else {
-                markAsUsed(code);
+                await markAsUsed(code);
             }
         }
 
-        function markAsUsed(code) {
+        async function markAsUsed(code) {
             const now = new Date();
             const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
-            if (!mockDB[code]) mockDB[code] = { expireAt: '2026-12-31' };
-            mockDB[code].status = 'used';
-            mockDB[code].usedAt = timeString;
+            // Save to Supabase (Delete for one-time use)
+            if (supabaseClient) {
+                const { error } = await supabaseClient
+                    .from('promo_codes')
+                    .delete()
+                    .eq('code', code);
+                if (error) console.error('Error removing promo code:', error);
+            }
 
             actionsHistory.unshift({ code, timestamp: now.toISOString(), timeString });
             if (document.getElementById('historyToggle').checked) {
                 localStorage.setItem('actionsHistory', JSON.stringify(actionsHistory));
             }
+            savePromoHistoryToSupabase(actionsHistory[0]);
             renderHistory();
 
             document.getElementById('promoInput').value = '';
@@ -2126,18 +2213,45 @@
         function renderHistory() {
             const historyList = document.getElementById('historyList');
             const t = translations[currentLang];
-            historyList.innerHTML = actionsHistory.map(entry => `
+            historyList.innerHTML = actionsHistory.map((entry, index) => `
                 <div class="history-item">
-                    <div>
+                    <div style="flex: 1;">
                         <div class="history-code">${entry.code}</div>
                         <div class="history-sub">${t.toastSuccess}</div>
                     </div>
-                    <div>
+                    <div style="text-align: right;">
                         <div class="history-time">${entry.timeString}</div>
                         <div class="history-now">${t.justNow}</div>
                     </div>
+                    <div class="history-delete" onclick="deleteHistoryItem(${entry.id || null}, '${entry.timestamp}', ${index})" title="Delete entry">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        async function deleteHistoryItem(id, timestamp, index) {
+            // Remove from local array
+            actionsHistory.splice(index, 1);
+
+            // Remove from Supabase if logged in
+            if (supabaseClient && currentUser) {
+                let query = supabaseClient.from('promo_history').delete();
+                if (id) {
+                    query = query.eq('id', id);
+                } else {
+                    query = query.eq('email', currentUser.email).eq('timestamp', timestamp);
+                }
+                const { error } = await query;
+                if (error) console.error('Error deleting from Supabase:', error);
+            }
+
+            // Sync with LocalStorage
+            if (document.getElementById('historyToggle').checked) {
+                localStorage.setItem('actionsHistory', JSON.stringify(actionsHistory));
+            }
+
+            renderHistory();
         }
 
         /* ===================================================

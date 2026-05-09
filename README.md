@@ -1,110 +1,92 @@
-# PromoCheck Pro — Global Validator
+# 🚀 PromoCheck Pro — Global Validator
 
-Веб-застосунок для перевірки статусу промокодів з підтримкою кількох мов інтерфейсу.
+![PromoCheck Pro Mockup](assets/promocheck_mockup.png)
 
----
-
-## Огляд
-
-**PromoCheck Pro** — це однофайловий клієнтський інструмент, що дозволяє торговим представникам або касирам швидко перевіряти, чи є промокод дійсним, вже використаним або простроченим. Після перевірки код можна одразу позначити як використаний, що фіксується у журналі дій на поточній сесії.
+**PromoCheck Pro** is a high-performance, professional web application designed for real-time promo code validation. Built with a focus on speed, aesthetics, and user experience, it serves as a robust tool for retail staff and administrators to manage and verify discounts globally.
 
 ---
 
-## Можливості
+## ✨ Key Features
 
-| Функція | Опис |
-|---|---|
-| **Перевірка статусу** | Визначає стан коду: `valid` / `used` / `expired` |
-| **Дата завершення** | Показує індивідуальну дату закінчення дії кожного коду |
-| **Погашення коду** | Кнопка «REDEEM NOW» позначає дійсний код як використаний |
-| **Журнал дій** | Відображає всі погашені за сесію коди з часом |
-| **Мультимовність** | Інтерфейс перемикається між **EN / UA / FR / ES** |
-| **Адаптивний дизайн** | Коректно відображається на мобільних і десктоп пристроях |
+- **🌐 Global Localization**
+  - Instant interface switching between **English**, **Ukrainian**, **French**, and **Spanish**.
+  - All labels, placeholders, and status messages are fully localized.
 
----
+- **🔒 Advanced Authentication**
+  - Secure login and registration system.
+  - Profile management for personal information and preferences.
+  - Google OAuth integration (UI/Mock ready).
 
-## Стек технологій
+- **☁️ Supabase Integration**
+  - Cloud-based data persistence for user profiles and promo action history.
+  - Real-time synchronization across sessions.
 
-- **HTML5** — структура сторінки
-- **Tailwind CSS** (CDN) — стилізація та адаптивна верстка
-- **Font Awesome 6** (CDN) — іконки
-- **Vanilla JavaScript** — уся логіка застосунку (без фреймворків)
+- **🌓 Dynamic Theme Engine**
+  - Seamless toggle between **Light** and **Dark** modes.
+  - Remembers user preference via local storage.
 
----
+- **📊 Real-time Action Log**
+  - Detailed history of activated codes with timestamps.
+  - Persistent storage via Supabase backend.
 
-## Структура проекту
-
-```
-promo/
-└── index.html   ← єдиний файл застосунку (HTML + CSS + JS)
-```
+- **📱 Premium Responsive Design**
+  - Stunning modern UI with smooth transitions and glassmorphism effects.
+  - Optimized for both desktop and mobile devices.
 
 ---
 
-## Запуск
+## 🛠️ Technology Stack
 
-Проект не потребує складання або встановлення залежностей. Достатньо відкрити файл у браузері:
-
-```
-Відкрити index.html у будь-якому сучасному браузері
-```
-
-> **Примітка:** для коректної роботи CDN-ресурсів (Tailwind, Font Awesome) необхідне підключення до інтернету.
+- **Core:** HTML5, Modern Vanilla JavaScript (ES6+).
+- **Styling:** Custom Vanilla CSS with HSL color system and dynamic variables.
+- **Backend:** [Supabase](https://supabase.com/) for Database & Auth.
+- **Icons:** Font Awesome 6.
+- **Typography:** Google Fonts (Inter).
 
 ---
 
-## Логіка перевірки коду
+## 🚀 Getting Started
 
-```
-Введення коду → checkCode()
-       │
-       ├── Код є у mockDB?
-       │       ├── Так → використати збережені дані
-       │       └── Ні  → вважати дійсним (термін: +7 днів від сьогодні)
-       │
-       ├── status === 'used'  → показати "ALREADY USED"
-       ├── today > expireAt   → показати "EXPIRED"
-       └── інакше             → показати "VALID" + кнопка погашення
-```
+### Prerequisites
+To use the cloud features (Supabase), ensure you have an internet connection.
 
-### Тестові промокоди (вбудовані в `mockDB`)
-
-| Код | Статус | Термін |
-|---|---|---|
-| `SALE10` | valid | 2026-12-31 |
-| `WEEKEND` | valid (прострочений) | 2024-05-20 |
-| `USED-50` | used | — (використано о 12:45) |
-
-Будь-який інший код буде вважатися дійсним з терміном `+7 днів`.
-
----
-
-## Локалізація
-
-Переклади зберігаються в об'єкті `translations` всередині `<script>`. Додавання нової мови:
-
-1. Додати новий ключ до об'єкта `translations` (наприклад, `de: { ... }`).
-2. Додати кнопку у навігаційну панель мов:
-   ```html
-   <button onclick="setLanguage('de')" id="btn-de" class="lang-btn">DE</button>
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/rederdge/Promo.git
    ```
+2. Navigate to the project folder:
+   ```bash
+   cd Promo
+   ```
+3. Open `index.html` in any modern web browser.
 
-Всі рядки інтерфейсу, включно з плейсхолдером поля вводу та повідомленнями статусу, перемикаються автоматично.
+### Configuration
+The application is pre-configured with a Supabase instance. To use your own:
+1. Update `SUPABASE_URL` and `SUPABASE_ANON_KEY` in the `<script>` section of `index.html`.
+2. Ensure your Supabase tables (`users`, `promo_history`) match the application schema.
 
 ---
 
-## Обмеження (поточна версія)
+## 📖 How It Works
 
-- **Дані зберігаються лише у пам'яті браузера** — при перезавантаженні сторінки журнал дій та зміни статусів скидаються.
-- **Немає серверної частини** — `mockDB` є статичним об'єктом у коді. Для реального використання необхідно підключити API або базу даних.
-- **Відсутня аутентифікація** — будь-хто, хто відкриє сторінку, може перевіряти та погашати коди.
+1. **Enter Code:** Type any promo code into the main input field.
+2. **Check Status:** Click "CHECK STATUS" to verify validity.
+3. **Redeem:** If valid, click "ACTIVATE NOW" to redeem the code.
+4. **History:** View your redeemed codes in the "Action Log" below.
 
 ---
 
-## Можливі покращення
+## 🤝 Contributing
 
-- [ ] Підключення до реального бекенд-API
-- [ ] Збереження журналу у `localStorage` між сесіями
-- [ ] Додавання нових мов (DE, PL, IT тощо)
-- [ ] Захист доступу (логін/пароль або токен)
-- [ ] Пошук і фільтрація в журналі дій
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+*Developed with ❤️ for a better checkout experience.*
